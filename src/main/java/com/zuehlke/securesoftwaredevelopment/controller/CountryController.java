@@ -5,6 +5,7 @@ import com.zuehlke.securesoftwaredevelopment.domain.Country;
 import com.zuehlke.securesoftwaredevelopment.repository.CountryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ public class CountryController {
     }
 
     @GetMapping("/new-country")
+    @PreAuthorize("hasAuthority('CREATE_COUNTRY')")
     public String newCountry(
             Model model,
             @RequestParam(value = "nameTaken", required = false) Boolean nameTaken,
@@ -39,6 +41,7 @@ public class CountryController {
     }
 
     @PostMapping("/countries/create")
+    @PreAuthorize("hasAuthority('CREATE_COUNTRY')")
     public String create(@RequestParam String name) {
         if (name == null) {
             return "redirect:/new-country?nameInvalid=true";

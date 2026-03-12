@@ -1,6 +1,7 @@
 package com.zuehlke.securesoftwaredevelopment.controller;
 
 import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
+import com.zuehlke.securesoftwaredevelopment.config.SecurityUtil;
 import com.zuehlke.securesoftwaredevelopment.domain.Hotel;
 import com.zuehlke.securesoftwaredevelopment.domain.Reservation;
 import com.zuehlke.securesoftwaredevelopment.domain.RoomType;
@@ -9,6 +10,8 @@ import com.zuehlke.securesoftwaredevelopment.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 public class ReservationController {
@@ -38,20 +42,24 @@ public class ReservationController {
     }
 
     @GetMapping("/reservations/view")
+    @PreAuthorize("hasAuthority('VIEW_RESERVATION')")
     public String view(Model model, Authentication authentication) {
-        List<Reservation> allReservations = reservationRepository.getAll();
-
         User user = (User) authentication.getPrincipal();
         Integer userId = user.getId();
         List<Reservation> userReservations = reservationRepository.forUser(userId);
 
-        model.addAttribute("allReservations", allReservations);
+        boolean isAdmin = SecurityUtil.hasPermission("VIEW_PERSON");
+        if (isAdmin) {
+            model.addAttribute("allReservations", reservationRepository.getAll());
+        }
+        model.addAttribute("showAllReservations", isAdmin);
         model.addAttribute("userReservations", userReservations);
 
         return "reservations";
     }
 
     @GetMapping("/reservations/new/{id}")
+    @PreAuthorize("hasAuthority('CREATE_RESERVATION')")
     public String showReservation(
             @PathVariable int id,
             Model model,
@@ -70,6 +78,7 @@ public class ReservationController {
     }
 
     @PostMapping("/reservations/create")
+    @PreAuthorize("hasAuthority('CREATE_RESERVATION')")
     public String createReservation(
             @RequestParam Integer hotelId,
             @RequestParam Integer roomTypeId,
@@ -126,7 +135,18 @@ public class ReservationController {
     }
 
     @PostMapping("/reservations/delete")
+    @PreAuthorize("hasAuthority('VIEW_RESERVATION')")
     public String delete(@RequestParam Integer id) {
+        User currentUser = SecurityUtil.getCurrentUser();
+        boolean isAdmin = SecurityUtil.hasPermission("VIEW_PERSON");
+        if (!isAdmin) {
+            boolean ownsReservation = reservationRepository.forUser(currentUser.getId()).stream()
+                    .anyMatch(reservation -> reservation.getId().equals(id));
+            if (!ownsReservation) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can delete only your own reservations");
+            }
+        }
+
         reservationRepository.deleteById(id);
         return "redirect:/reservations/view";
     }

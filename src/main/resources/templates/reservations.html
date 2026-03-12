@@ -51,11 +51,11 @@
         </tbody>
     </table>
 
-    <hr class="mt-4 mb-4"/>
+    <hr class="mt-4 mb-4" th:if="${showAllReservations}"/>
 
-    <h2>All reservations</h2>
+    <h2 th:if="${showAllReservations}">All reservations</h2>
 
-    <table class="table table-striped" th:if="${allReservations != null && !#lists.isEmpty(allReservations)}">
+    <table class="table table-striped" th:if="${showAllReservations && allReservations != null && !#lists.isEmpty(allReservations)}">
         <thead>
         <tr>
             <th>#</th>
