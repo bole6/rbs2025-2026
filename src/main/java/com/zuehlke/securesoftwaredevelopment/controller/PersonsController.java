@@ -7,13 +7,16 @@ import com.zuehlke.securesoftwaredevelopment.repository.PersonRepository;
 import com.zuehlke.securesoftwaredevelopment.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -33,7 +36,9 @@ public class PersonsController {
     }
 
     @GetMapping("/persons/{id}")
-    public String person(@PathVariable int id, Model model) {
+    public String person(@PathVariable int id, Model model, HttpSession session) {
+        String csrf = session.getAttribute("CSRF_TOKEN").toString();
+        model.addAttribute("CSRF_TOKEN", csrf);
         model.addAttribute("person", personRepository.get("" + id));
         model.addAttribute("username", userRepository.findUsername(id));
         return "person";
@@ -56,14 +61,24 @@ public class PersonsController {
     }
 
     @PostMapping("/update-person")
-    public String updatePerson(Person person, String username) {
+    public String updatePerson(Person person,
+                               String username,
+                               HttpSession session,
+                               @RequestParam(value= "csrfToken", required = false) String csrfToken
+    ) {
+        String csrf = session.getAttribute("CSRF_TOKEN").toString();
+        if(!csrf.equals(csrfToken)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No CSRF For you hacker xexe");
+        }
         personRepository.update(person);
         userRepository.updateUsername(Integer.parseInt(person.getId()), username);
         return "redirect:/persons/" + person.getId();
     }
 
     @GetMapping("/persons")
-    public String persons(Model model) {
+    public String persons(Model model, HttpSession session) {
+        String csrf = session.getAttribute("CSRF_TOKEN").toString();
+        model.addAttribute("CSRF_TOKEN", csrf);
         model.addAttribute("persons", personRepository.getAll());
         return "persons";
     }
