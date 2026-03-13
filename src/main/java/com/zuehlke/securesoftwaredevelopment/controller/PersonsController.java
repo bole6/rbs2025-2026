@@ -62,7 +62,7 @@ public class PersonsController {
     @PreAuthorize("hasAuthority('UPDATE_PERSON')")
     public ResponseEntity<Void> person(@PathVariable int id) {
         User currentUser = SecurityUtil.getCurrentUser();
-        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
+        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("secure");
         if (!isAdmin && (currentUser == null || currentUser.getId() != id)) {
             LOG.warn("User {} attempted to delete person with id {}", currentUser != null ? currentUser.getId() : "unknown", id);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can delete only your own profile");
@@ -88,7 +88,7 @@ public class PersonsController {
         }
         User currentUser = SecurityUtil.getCurrentUser();
         int personId = Integer.parseInt(person.getId());
-        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
+        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("secure");
         if (!isAdmin && (currentUser == null || currentUser.getId() != personId)) {
             LOG.warn("User {} attempted to update person with id {}", currentUser != null ? currentUser.getId() : "unknown", personId);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can update only your own profile");

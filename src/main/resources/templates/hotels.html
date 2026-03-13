@@ -68,7 +68,7 @@
             tds[0].textContent = hotel.id;
             tds[1].textContent = hotel.name;
             tds[2].textContent = hotel.cityName;
-            tds[3].textContent = `<a href="/hotels?id=${hotel.id}">Details</a>`;
+            tds[3].innerHTML = `<a href="/hotels?id=${hotel.id}">Details</a>`;
 
             const tbody = document.querySelector('#hotelsTableContent');
             tbody.appendChild(row);
