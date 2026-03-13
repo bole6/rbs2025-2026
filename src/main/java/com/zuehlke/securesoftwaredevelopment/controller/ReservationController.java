@@ -48,7 +48,8 @@ public class ReservationController {
         Integer userId = user.getId();
         List<Reservation> userReservations = reservationRepository.forUser(userId);
 
-        boolean isAdmin = SecurityUtil.hasPermission("VIEW_PERSON");
+        User currentUser = SecurityUtil.getCurrentUser();
+        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
         if (isAdmin) {
             model.addAttribute("allReservations", reservationRepository.getAll());
         }
@@ -138,7 +139,7 @@ public class ReservationController {
     @PreAuthorize("hasAuthority('VIEW_RESERVATION')")
     public String delete(@RequestParam Integer id) {
         User currentUser = SecurityUtil.getCurrentUser();
-        boolean isAdmin = SecurityUtil.hasPermission("VIEW_PERSON");
+        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
         if (!isAdmin) {
             boolean ownsReservation = reservationRepository.forUser(currentUser.getId()).stream()
                     .anyMatch(reservation -> reservation.getId().equals(id));

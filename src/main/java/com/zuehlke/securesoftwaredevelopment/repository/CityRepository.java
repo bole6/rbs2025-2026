@@ -1,6 +1,7 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
 import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
+import com.zuehlke.securesoftwaredevelopment.config.Entity;
 import com.zuehlke.securesoftwaredevelopment.domain.City;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class CityRepository {
                 cityList.add(new City(id, countryId, name, countryName));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching cities", e);
         }
 
         return cityList;
@@ -54,7 +55,7 @@ public class CityRepository {
                 return new City(id, countryId, name);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching city with id {}", cityId, e);
         }
 
         return null;
@@ -75,7 +76,7 @@ public class CityRepository {
 
             return cityList;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching city with name {}", name, e);
         }
 
         return null;
@@ -91,6 +92,7 @@ public class CityRepository {
             statement.setInt(1, city.getCountryId());
             statement.setString(2, city.getName());
             int rows = statement.executeUpdate();
+            auditLogger.audit("City created with name " + city.getName());
 
             if (rows == 0) {
                 throw new SQLException("Creating city failed, no rows affected.");
@@ -103,7 +105,7 @@ public class CityRepository {
 
             return id;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while creating city with name {}", city.getName(), e);
         }
 
         return id;

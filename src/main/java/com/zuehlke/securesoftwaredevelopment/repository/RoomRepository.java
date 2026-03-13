@@ -43,7 +43,7 @@ public class RoomRepository {
                 roomTypes.add(new RoomType(id, hotelId, name, capacity, pricePerNight, totalRooms));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching room types for hotel with id {}", hotelId, e);
         }
 
         return roomTypes;
@@ -72,7 +72,7 @@ public class RoomRepository {
                 return roomType;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching room type with id {} for hotel with id {}", roomTypeId, hotelId, e);
         }
 
         return null;

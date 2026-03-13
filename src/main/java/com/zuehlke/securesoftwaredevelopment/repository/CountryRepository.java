@@ -35,7 +35,7 @@ public class CountryRepository {
 
             return countryList;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching countries", e);
         }
 
         return null;
@@ -52,7 +52,7 @@ public class CountryRepository {
                 return new Country(id, name);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching country with id {}", countryId, e);
         }
 
         return null;
@@ -71,7 +71,7 @@ public class CountryRepository {
 
             return countryList;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching country with name {}", name, e);
         }
 
         return null;
@@ -84,13 +84,14 @@ public class CountryRepository {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
         ) {
+            auditLogger.audit("Creating country with name " + country.getName());
             int rows = statement.executeUpdate(query);
 
             if (rows == 0) {
                 throw new SQLException("Creating city failed, no rows affected.");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while creating country with name {}", country.getName(), e);
         }
 
         return id;

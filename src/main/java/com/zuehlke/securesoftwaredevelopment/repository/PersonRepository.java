@@ -34,7 +34,7 @@ public class PersonRepository {
                 personList.add(createPersonFromResultSet(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching persons", e);
         }
         return personList;
     }
@@ -49,6 +49,8 @@ public class PersonRepository {
             while (rs.next()) {
                 personList.add(createPersonFromResultSet(rs));
             }
+        } catch (SQLException e) {
+            LOG.warn("Error while searching for persons with search term {}", searchTerm, e);
         }
         return personList;
     }
@@ -62,7 +64,7 @@ public class PersonRepository {
                 return createPersonFromResultSet(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching person with id {}", personId, e);
         }
 
         return null;
@@ -74,17 +76,23 @@ public class PersonRepository {
              Statement statement = connection.createStatement();
         ) {
             statement.executeUpdate(query);
+            auditLogger.audit("Deleted Person with personid " + personId);
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while deleting person with id {}", personId, e);
         }
     }
 
     private Person createPersonFromResultSet(ResultSet rs) throws SQLException {
-        int id = rs.getInt(1);
-        String firstName = rs.getString(2);
-        String lastName = rs.getString(3);
-        String email = rs.getString(4);
-        return new Person("" + id, firstName, lastName, email);
+        try {
+            int id = rs.getInt(1);
+            String firstName = rs.getString(2);
+            String lastName = rs.getString(3);
+            String email = rs.getString(4);
+            return new Person("" + id, firstName, lastName, email);
+        } catch (SQLException e) {
+            LOG.warn("Error while creating person from result set", e);
+            throw e;
+        }
     }
 
     public void update(Person personUpdate) {
@@ -99,8 +107,10 @@ public class PersonRepository {
             statement.setString(1, firstName);
             statement.setString(2, email);
             statement.executeUpdate();
+            auditLogger.auditChange(new Entity("person.update", personUpdate.getId(), personFromDb.getFirstName(), personUpdate.getFirstName()));
+            auditLogger.auditChange(new Entity("person.update", personUpdate.getId(), personFromDb.getLastName(), personUpdate.getLastName()));
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while updating person with id {}", personUpdate.getId(), e);
         }
     }
 }

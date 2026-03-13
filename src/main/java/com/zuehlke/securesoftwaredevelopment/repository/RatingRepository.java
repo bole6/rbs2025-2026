@@ -44,7 +44,7 @@ public class RatingRepository {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while creating or updating rating for hotel with id {} and user with id {}", rating.getHotelId(), rating.getUserId(), e);
         }
     }
 
@@ -58,7 +58,7 @@ public class RatingRepository {
                 ratingList.add(new Rating(rs.getInt(1), rs.getInt(2), rs.getInt(3)));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching ratings for hotel with id {}", hotelId, e);
         }
         return ratingList;
     }

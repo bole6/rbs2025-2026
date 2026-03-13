@@ -49,7 +49,9 @@ public class PersonsController {
 
     @GetMapping("/myprofile")
     @PreAuthorize("hasAuthority('VIEW_MY_PROFILE')")
-    public String self(Model model, Authentication authentication) {
+    public String self(Model model, Authentication authentication, HttpSession session) {
+        String csrf = session.getAttribute("CSRF_TOKEN").toString();
+        model.addAttribute("CSRF_TOKEN", csrf);
         User user = (User) authentication.getPrincipal();
         model.addAttribute("person", personRepository.get("" + user.getId()));
         model.addAttribute("username", userRepository.findUsername(user.getId()));
@@ -60,7 +62,7 @@ public class PersonsController {
     @PreAuthorize("hasAuthority('UPDATE_PERSON')")
     public ResponseEntity<Void> person(@PathVariable int id) {
         User currentUser = SecurityUtil.getCurrentUser();
-        boolean isAdmin = SecurityUtil.hasPermission("VIEW_PERSON");
+        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
         if (!isAdmin && (currentUser == null || currentUser.getId() != id)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can delete only your own profile");
         }
@@ -78,16 +80,15 @@ public class PersonsController {
                                HttpSession session,
                                @RequestParam(value= "csrfToken", required = false) String csrfToken
     ) {
-        User currentUser = SecurityUtil.getCurrentUser();
-        int personId = Integer.parseInt(person.getId());
-        boolean isAdmin = SecurityUtil.hasPermission("VIEW_PERSON");
-        if (!isAdmin && (currentUser == null || currentUser.getId() != personId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can update only your own profile");
-        }
-
         String csrf = session.getAttribute("CSRF_TOKEN").toString();
         if(!csrf.equals(csrfToken)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No CSRF For you hacker xexe");
+        }
+        User currentUser = SecurityUtil.getCurrentUser();
+        int personId = Integer.parseInt(person.getId());
+        boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
+        if (!isAdmin && (currentUser == null || currentUser.getId() != personId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can update only your own profile");
         }
         personRepository.update(person);
         userRepository.updateUsername(personId, username);

@@ -42,6 +42,7 @@ public class ReservationRepository {
             statement.setInt(7, r.getGuestsCount());
 
             int rows = statement.executeUpdate();
+            auditLogger.audit("Created reservation for user with id " + r.getUserId());
 
             if (rows == 0) {
                 throw new SQLException("Creating city failed, no rows affected.");
@@ -54,7 +55,7 @@ public class ReservationRepository {
 
             return id;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while creating reservation for user with id {} and hotel with id {}", r.getUserId(), r.getHotelId(), e);
         }
 
         return id;
@@ -72,7 +73,7 @@ public class ReservationRepository {
                 reservationList.add(r);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching reservations", e);
         }
 
         return reservationList;
@@ -92,38 +93,43 @@ public class ReservationRepository {
                 reservationList.add(r);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching reservations for user with id {}", userId, e);
         }
 
         return reservationList;
     }
 
-    private Reservation createPersonFromResultSet(ResultSet rs) throws java.sql.SQLException {
-        Integer id = rs.getInt(1);
-        Integer userId = rs.getInt(2);
-        Integer hotelId = rs.getInt(3);
-        String hotelName = rs.getString(4);
-        Integer roomTypeId = rs.getInt(5);
-        String roomTypeName = rs.getString(6);
-        LocalDate startDate = rs.getDate(7).toLocalDate();
-        LocalDate endDate = rs.getDate(8).toLocalDate();
-        Integer roomsCount = rs.getInt(9);
-        Integer guestCount = rs.getInt(10);
-        BigDecimal totalPrice = rs.getBigDecimal(11);
+    private Reservation createPersonFromResultSet(ResultSet rs) throws SQLException {
+        try {
+            Integer id = rs.getInt(1);
+            Integer userId = rs.getInt(2);
+            Integer hotelId = rs.getInt(3);
+            String hotelName = rs.getString(4);
+            Integer roomTypeId = rs.getInt(5);
+            String roomTypeName = rs.getString(6);
+            LocalDate startDate = rs.getDate(7).toLocalDate();
+            LocalDate endDate = rs.getDate(8).toLocalDate();
+            Integer roomsCount = rs.getInt(9);
+            Integer guestCount = rs.getInt(10);
+            BigDecimal totalPrice = rs.getBigDecimal(11);
 
-        return new Reservation(
-                id,
-                userId,
-                hotelId,
-                hotelName,
-                roomTypeId,
-                roomTypeName,
-                startDate,
-                endDate,
-                roomsCount,
-                guestCount,
-                totalPrice
-        );
+            return new Reservation(
+                    id,
+                    userId,
+                    hotelId,
+                    hotelName,
+                    roomTypeId,
+                    roomTypeName,
+                    startDate,
+                    endDate,
+                    roomsCount,
+                    guestCount,
+                    totalPrice
+            );
+        } catch (SQLException e) {
+            LOG.warn("Error while creating reservation from result set", e);
+            throw e;
+        }
     }
 
     public void deleteById(Integer id) {
@@ -133,8 +139,9 @@ public class ReservationRepository {
              Statement statement = connection.createStatement();
         ) {
             statement.executeUpdate(query);
+            auditLogger.audit("Deleted reservation with id " + id);
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while deleting reservation with id {}", id, e);
         }
     }
 }

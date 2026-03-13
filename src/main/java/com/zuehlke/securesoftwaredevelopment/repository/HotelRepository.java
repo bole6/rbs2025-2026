@@ -38,7 +38,7 @@ public class HotelRepository {
                 hotelList.add(new Hotel(id, cityId, name, description, address));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching hotels for city with id {}", cityId, e);
         }
 
         return hotelList;
@@ -68,7 +68,7 @@ public class HotelRepository {
                 hotelList.add(hotel);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching hotels", e);
         }
 
         return hotelList;
@@ -85,7 +85,7 @@ public class HotelRepository {
                 return crateHotelFromResultSet(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching hotel with id {}", hotelId, e);
         }
 
         return null;
@@ -99,7 +99,7 @@ public class HotelRepository {
              ResultSet rs = statement.executeQuery(query)) {
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while checking existence of hotel with id {}", hotelId, e);
         }
 
         return false;
@@ -116,6 +116,7 @@ public class HotelRepository {
             statement.setString(3, hotel.getDescription());
             statement.setString(4, hotel.getAddress());
             int rows = statement.executeUpdate();
+            auditLogger.audit("Creating hotel with name " + hotel.getName());
 
             if (rows == 0) {
                 throw new SQLException("Creating hotel failed, no rows affected.");
@@ -128,7 +129,7 @@ public class HotelRepository {
 
             return id;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while creating hotel with name {}", hotel.getName(), e);
         }
         return id;
     }
@@ -145,18 +146,25 @@ public class HotelRepository {
             while (rs.next()) {
                 destinationList.add(crateHotelFromResultSet(rs));
             }
+        } catch (SQLException e) {
+            LOG.warn("Error while searching hotels with search term {}", searchTerm, e);
         }
         return destinationList;
     }
 
     private Hotel crateHotelFromResultSet(ResultSet rs) throws SQLException {
-        int id = rs.getInt(1);
-        int cityId = rs.getInt(2);
-        String name = rs.getString(3);
-        String cityName = rs.getString(4);
-        String description = rs.getString(5);
-        String address = rs.getString(6);
+        try {
+            int id = rs.getInt(1);
+            int cityId = rs.getInt(2);
+            String name = rs.getString(3);
+            String cityName = rs.getString(4);
+            String description = rs.getString(5);
+            String address = rs.getString(6);
 
-        return new Hotel(id, cityId, name, cityName, description, address);
+            return new Hotel(id, cityId, name, cityName, description, address);
+        } catch (SQLException e) {
+            LOG.warn("Error while creating hotel from result set", e);
+            throw e;
+        }
     }
 }

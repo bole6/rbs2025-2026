@@ -31,7 +31,7 @@ public class UserRepository {
                 return new User(id, username1, password);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching user with username {}", username, e);
         }
         return null;
     }
@@ -46,7 +46,7 @@ public class UserRepository {
                 return username;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while fetching username for user with id {}", id, e);
         }
         return null;
     }
@@ -60,7 +60,7 @@ public class UserRepository {
             statement.setString(1, username);
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while updating username for user with id {}", id, e);
         }
     }
 
@@ -71,7 +71,7 @@ public class UserRepository {
              ResultSet rs = statement.executeQuery(query)) {
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while validating credentials for user with username {}", username, e);
         }
         return false;
     }
@@ -83,7 +83,7 @@ public class UserRepository {
         ) {
             statement.executeUpdate(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Error while deleting user with id {}", userId, e);
         }
     }
 }

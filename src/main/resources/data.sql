@@ -1,7 +1,7 @@
 insert into users(id, username, password)
 values (1, 'bruce', 'wayne'),
        (2, 'peter', 'security_rules'),
-       (3, 'tom', 'guessmeifyoucan'),
+       (3, 'tom', 'riddle'),
        (4, 'secure', 'travel');
 
 insert into persons(id, firstName, lastName, email)
@@ -112,6 +112,6 @@ values
     (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
     (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12),
     -- MANAGER permissions
-    (2, 1), (2, 2), (2, 5), (2, 6), (2, 8), (2, 9), (2, 10), (2, 11),
+    (2, 1), (2, 2), (2, 5), (2, 6), (2, 8), (2, 9), (2, 11),
     -- CUSTOMER permissions
     (3, 1), (3, 2), (3, 8), (3, 9), (3, 10), (3, 11), (3, 12);
