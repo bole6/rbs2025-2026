@@ -84,8 +84,8 @@ public class CountryRepository {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
         ) {
-            auditLogger.audit("Creating country with name " + country.getName());
             int rows = statement.executeUpdate(query);
+            auditLogger.audit("Creating country with name " + country.getName());
 
             if (rows == 0) {
                 throw new SQLException("Creating city failed, no rows affected.");

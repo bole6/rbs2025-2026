@@ -1,5 +1,7 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
+import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
+import com.zuehlke.securesoftwaredevelopment.config.Entity;
 import com.zuehlke.securesoftwaredevelopment.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,7 @@ import java.sql.*;
 public class UserRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserRepository.class);
+    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(UserRepository.class);
 
     private final DataSource dataSource;
 
@@ -59,6 +62,7 @@ public class UserRepository {
         ) {
             statement.setString(1, username);
             statement.executeUpdate();
+            auditLogger.auditChange(new Entity("users.username", String.valueOf(id), username, username));
         } catch (SQLException e) {
             LOG.warn("Error while updating username for user with id {}", id, e);
         }
@@ -82,6 +86,7 @@ public class UserRepository {
              Statement statement = connection.createStatement();
         ) {
             statement.executeUpdate(query);
+            auditLogger.audit("Deleted user with id " + userId);
         } catch (SQLException e) {
             LOG.warn("Error while deleting user with id {}", userId, e);
         }

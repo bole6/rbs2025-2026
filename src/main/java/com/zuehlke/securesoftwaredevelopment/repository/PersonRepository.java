@@ -107,8 +107,8 @@ public class PersonRepository {
             statement.setString(1, firstName);
             statement.setString(2, email);
             statement.executeUpdate();
-            auditLogger.auditChange(new Entity("person.update", personUpdate.getId(), personFromDb.getFirstName(), personUpdate.getFirstName()));
-            auditLogger.auditChange(new Entity("person.update", personUpdate.getId(), personFromDb.getLastName(), personUpdate.getLastName()));
+            auditLogger.auditChange(new Entity("person.update.firstName", personUpdate.getId(), personFromDb.getFirstName(), personUpdate.getFirstName()));
+            auditLogger.auditChange(new Entity("person.update.LastName", personUpdate.getId(), personFromDb.getLastName(), personUpdate.getLastName()));
         } catch (SQLException e) {
             LOG.warn("Error while updating person with id {}", personUpdate.getId(), e);
         }

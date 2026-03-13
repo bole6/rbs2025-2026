@@ -1,5 +1,6 @@
 package com.zuehlke.securesoftwaredevelopment.controller;
 
+import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
 import com.zuehlke.securesoftwaredevelopment.domain.Rating;
 import com.zuehlke.securesoftwaredevelopment.domain.User;
 import com.zuehlke.securesoftwaredevelopment.repository.RatingRepository;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Controller
 public class RatingsController {
     private static final Logger LOG = LoggerFactory.getLogger(RatingsController.class);
+    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(RatingsController.class);
 
     private RatingRepository ratingRepository;
 
@@ -27,6 +29,7 @@ public class RatingsController {
         User user = (User) authentication.getPrincipal();
         rating.setUserId(user.getId());
         ratingRepository.createOrUpdate(rating);
+        auditLogger.audit("Rated hotel with id " + rating.getHotelId() + " with rating " + rating.getRating());
 
         return "redirect:/hotels?id=" + rating.getHotelId();
     }

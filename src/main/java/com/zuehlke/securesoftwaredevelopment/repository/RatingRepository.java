@@ -1,5 +1,6 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
+import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
 import com.zuehlke.securesoftwaredevelopment.domain.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import java.util.List;
 public class RatingRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(RatingRepository.class);
+    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(RatingRepository.class);
 
     private final DataSource dataSource;
 
@@ -36,12 +38,14 @@ public class RatingRepository {
                 preparedStatement.setInt(2, rating.getHotelId());
                 preparedStatement.setInt(3, rating.getUserId());
                 preparedStatement.executeUpdate();
+                auditLogger.audit("Updated rating for hotel with id " + rating.getHotelId());
             } else {
                 PreparedStatement preparedStatement = connection.prepareStatement(query3);
                 preparedStatement.setInt(1, rating.getHotelId());
                 preparedStatement.setInt(2, rating.getUserId());
                 preparedStatement.setInt(3, rating.getRating());
                 preparedStatement.executeUpdate();
+                auditLogger.audit("Created rating for hotel with id " + rating.getHotelId());
             }
         } catch (SQLException e) {
             LOG.warn("Error while creating or updating rating for hotel with id {} and user with id {}", rating.getHotelId(), rating.getUserId(), e);

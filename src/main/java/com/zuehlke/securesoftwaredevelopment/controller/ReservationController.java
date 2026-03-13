@@ -144,6 +144,7 @@ public class ReservationController {
             boolean ownsReservation = reservationRepository.forUser(currentUser.getId()).stream()
                     .anyMatch(reservation -> reservation.getId().equals(id));
             if (!ownsReservation) {
+                LOG.warn("User {} attempted to delete reservation with id {}", currentUser.getId(), id);
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can delete only your own reservations");
             }
         }

@@ -64,6 +64,7 @@ public class PersonsController {
         User currentUser = SecurityUtil.getCurrentUser();
         boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
         if (!isAdmin && (currentUser == null || currentUser.getId() != id)) {
+            LOG.warn("User {} attempted to delete person with id {}", currentUser != null ? currentUser.getId() : "unknown", id);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can delete only your own profile");
         }
 
@@ -82,12 +83,14 @@ public class PersonsController {
     ) {
         String csrf = session.getAttribute("CSRF_TOKEN").toString();
         if(!csrf.equals(csrfToken)){
+            LOG.warn("CSRF token mismatch for person update, personId={}", person.getId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No CSRF For you hacker xexe");
         }
         User currentUser = SecurityUtil.getCurrentUser();
         int personId = Integer.parseInt(person.getId());
         boolean isAdmin = currentUser != null && currentUser.getUsername().equals("admin");
         if (!isAdmin && (currentUser == null || currentUser.getId() != personId)) {
+            LOG.warn("User {} attempted to update person with id {}", currentUser != null ? currentUser.getId() : "unknown", personId);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can update only your own profile");
         }
         personRepository.update(person);
